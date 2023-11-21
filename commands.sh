@@ -9,9 +9,12 @@
 
 # Passo a passo
 
+# Autenticação AKS
+    az aks get-credentials --resource-group FIBRASIL-IT-US-UAT-APP-AKS-RG --name aksappuatus002 --overwrite-existing --admin
+
 # 1. Criando namespace do apisix
-    kubectl create namespace apisix
-    kubectl config set-context --current --namespace=apisix
+    kubectl create namespace network-provisioner
+    kubectl config set-context --current --namespace=network-provisioner
 
 # 2. Adicionando repositório do Helm
     helm repo add apisix https://charts.apiseven.com
@@ -19,23 +22,15 @@
 
 # 3. Instalando apisix como uma aplicação no Kubernetes (Via Helm)
 
-    helm upgrade --install apisix apisix/apisix --namespace apisix
+    # helm inspect values apisix/apisix > apisix/values.yaml
 
-    export POD_NAME=$(kubectl get pods --namespace apisix -l "app.kubernetes.io/name=apisix,app.kubernetes.io/instance=apisix" -o jsonpath="{.items[0].metadata.name}")
-
-    kubectl --namespace apisix port-forward $POD_NAME 9080:9080
+    helm upgrade --install apisix apisix/apisix --namespace network-provisioner
 
 # 4. Instalando helm - dashboard
 
     # helm inspect values apisix/apisix-dashboard > apisix-dashboard/values.yaml
 
-    helm upgrade --install apisix-dashboard apisix/apisix-dashboard --namespace apisix --values apisix-dashboard/values.yaml
-    
-    export POD_NAME=$(kubectl get pods --namespace apisix -l "app.kubernetes.io/name=apisix-dashboard,app.kubernetes.io/instance=apisix-dashboard" -o jsonpath="{.items[0].metadata.name}")
-    
-    kubectl --namespace apisix port-forward $POD_NAME 9000:9000
-
-
+    helm upgrade --install apisix-dashboard apisix/apisix-dashboard --namespace network-provisioner --values apisix-dashboard/values.yaml
 
 # --------------------------------------------------------------------------- #
 # NÃO FOI INSTALADO O INGRESS-CONTROLLER, EM TODO CASO OS COMANDOS ESTÃO ABAIXO
